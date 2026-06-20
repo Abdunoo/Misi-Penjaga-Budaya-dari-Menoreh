@@ -5,6 +5,7 @@ import SlideStage from '@/components/SlideStage.vue'
 import NavControls from '@/components/NavControls.vue'
 import { useSlideAudio } from '@/composables/useSlideAudio'
 import { unlock } from '@/composables/useSfx'
+import { useIdleHide } from '@/composables/useIdleHide'
 import { slideByPage, PAGE_COUNT } from '@/data/slides'
 
 const route = useRoute()
@@ -15,10 +16,15 @@ const slide = computed(() => slideByPage(page.value))
 
 const { state, attach, toggle, resumeAfterGesture } = useSlideAudio()
 
-// First gesture unlocks both the narration retry and the SFX audio context.
+// Nav controls auto-hide after 3s of no touch; any tap reveals + restarts the timer.
+const { visible: controlsVisible, poke } = useIdleHide(3000)
+
+// First gesture unlocks both the narration retry and the SFX audio context, and also
+// reveals the nav controls (when hidden, the tap falls through to the host).
 function onHostGesture() {
   unlock()
   resumeAfterGesture()
+  poke()
 }
 
 // (re)load the narration whenever the page changes
@@ -51,7 +57,7 @@ function onControl(intent: 'home' | 'prev' | 'next' | 'toggle-audio') {
 <template>
   <SlideStage @hostgesture="onHostGesture">
     <img v-if="slide" class="slide-bg" :src="slide.background" :alt="slide.backgroundAlt" />
-    <NavControls :audio-state="state" @activate="onControl" />
+    <NavControls :audio-state="state" :visible="controlsVisible" @activate="onControl" />
   </SlideStage>
 </template>
 
