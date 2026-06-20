@@ -2,9 +2,9 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SlideStage from '@/components/SlideStage.vue'
-import StageObject from '@/components/StageObject.vue'
+import NavControls from '@/components/NavControls.vue'
 import { useSlideAudio } from '@/composables/useSlideAudio'
-import { slideByPage, targetToRoute, type SlideObject } from '@/data/slides'
+import { slideByPage, PAGE_COUNT } from '@/data/slides'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,56 +14,48 @@ const slide = computed(() => slideByPage(page.value))
 
 const { state, attach, toggle, resumeAfterGesture } = useSlideAudio()
 
-// (re)load backsound whenever the page changes
-watch(
-  slide,
-  (s) => {
-    if (s) attach(s.backsound)
-    else attach(null)
-  },
-  { immediate: true },
-)
+// (re)load the narration whenever the page changes
+watch(slide, (s) => attach(s?.backsound ?? null), { immediate: true })
 
-// Objects to render: hide the two audio-control variants that aren't active.
-const visibleObjects = computed<SlideObject[]>(() => {
-  const s = slide.value
-  if (!s) return []
-  return s.objects.filter((o) => {
-    if (o.role === 'volume') return state.value === 'volume'
-    if (o.role === 'mute') return state.value === 'mute'
-    if (o.role === 'replay') return state.value === 'replay'
-    return true
-  })
-})
+// Prev/Next walk the page chain; the ends fall back to the home menu.
+function go(delta: number) {
+  const next = page.value + delta
+  router.push(next < 1 || next > PAGE_COUNT ? '/' : `/slide/${next}`)
+}
 
-function onActivate(o: SlideObject) {
-  switch (o.role) {
+function onControl(intent: 'home' | 'prev' | 'next' | 'toggle-audio') {
+  switch (intent) {
     case 'home':
       router.push('/')
       break
-    case 'next':
     case 'prev':
-      router.push(targetToRoute(o.target))
+      go(-1)
       break
-    case 'volume':
-    case 'mute':
-    case 'replay':
+    case 'next':
+      go(1)
+      break
+    case 'toggle-audio':
       toggle()
       break
-    default:
-      if (o.target) router.push(targetToRoute(o.target))
   }
 }
 </script>
 
 <template>
   <SlideStage @hostgesture="resumeAfterGesture">
-    <StageObject
-      v-for="o in visibleObjects"
-      :key="o.id"
-      :obj="o"
-      :clickable="o.accType === 'button'"
-      @activate="onActivate(o)"
-    />
+    <img v-if="slide" class="slide-bg" :src="slide.background" :alt="slide.backgroundAlt" />
+    <NavControls :audio-state="state" @activate="onControl" />
   </SlideStage>
 </template>
+
+<style scoped>
+.slide-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1280px;
+  height: 720px;
+  display: block;
+  object-fit: fill;
+}
+</style>

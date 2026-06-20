@@ -28,3 +28,75 @@ img {
   -webkit-user-drag: none;
   pointer-events: none; /* clicks handled by the wrapping button element */
 }
+
+/* ---- Page slide transition (geser) — direction set by the router guard ----
+   Only transform is animated (compositor-only, smooth in the Android WebView).
+   Each view root is position:fixed inset:0, so translateX(100%) == one viewport. */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition: transform 350ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+.slide-forward-enter-active,
+.slide-back-enter-active {
+  z-index: 1;
+}
+.slide-forward-leave-active,
+.slide-back-leave-active {
+  z-index: 0;
+  pointer-events: none; /* tap can't hit the page being unmounted */
+}
+
+/* forward (Home/next): new page in from the right, old out to the left */
+.slide-forward-enter-from {
+  transform: translateX(100%);
+}
+.slide-forward-leave-to {
+  transform: translateX(-100%);
+}
+/* back (prev/Home): new page in from the left, old out to the right */
+.slide-back-enter-from {
+  transform: translateX(-100%);
+}
+.slide-back-leave-to {
+  transform: translateX(100%);
+}
+
+/* first load / opt-out: no animation */
+.none-enter-active,
+.none-leave-active {
+  transition: none;
+}
+
+/* ---- Popup transition (muncul) — fade + gentle scale-in from stage center ---- */
+.popup-enter-active,
+.popup-leave-active {
+  transition:
+    opacity 260ms ease,
+    transform 260ms cubic-bezier(0.34, 1.3, 0.64, 1);
+  transform-origin: 640px 360px; /* stage centre, in unscaled 1280x720 coords */
+  will-change: opacity, transform;
+}
+.popup-leave-active {
+  pointer-events: none;
+}
+.popup-enter-from,
+.popup-leave-to {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+/* Respect users who ask for less motion (schools / accessibility). 1ms (not none)
+   keeps transitionend firing so Vue reliably removes the transition classes. */
+@media (prefers-reduced-motion: reduce) {
+  .slide-forward-enter-active,
+  .slide-forward-leave-active,
+  .slide-back-enter-active,
+  .slide-back-leave-active,
+  .popup-enter-active,
+  .popup-leave-active {
+    transition-duration: 1ms !important;
+  }
+}

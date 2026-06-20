@@ -10,9 +10,10 @@ students. The original was a decompiled Android APK that ran a thin WebView over
 the Storyline HTML5 player; this project reproduces it pixel-for-pixel as a native
 Vue app (no Storyline engine) and repackages it as an `.apk`.
 
-The application source lives at the **repo root** (`src/`, `public/`, `android/`,
-`scripts/`). Legacy decompiled-APK blobs, duplicate raw Storyline exports, and
-Playwright verification snapshots have been removed from git.
+The application source lives at the **repo root** (`src/`, `public/`, `android/`).
+Legacy decompiled-APK blobs, duplicate raw Storyline exports, the original
+Storyline-extraction scripts, and Playwright verification snapshots have been removed
+from git — the app is now hand-written Vue components, not a generated data renderer.
 
 > Note: the repo directory is named `Misi-Penjaga-Budaya-dari-Menoreh` but the
 > app identity is still "Lucu yang Menyeramkan". Treat this Vue project as the
@@ -23,9 +24,8 @@ Playwright verification snapshots have been removed from git.
 ```
 ./
 ├── src/                  Vue app (views, components, composables, data)
-├── public/assets/        Runtime images + audio (referenced by slides.json)
+├── public/assets/        Runtime images + audio (img/, audio/) referenced by string path
 ├── android/              Capacitor Android shell
-├── scripts/              extract-slides.mjs, rename-assets.mjs (rare use)
 ├── build-apk.sh          APK build wrapper
 ├── build-output/         Generated APKs (gitignored)
 ├── dist/                 Vite build output (gitignored)
@@ -66,39 +66,56 @@ Manual equivalent: `npm run build && npx cap sync android && (cd android && ./gr
 
 ## Architecture
 
-The app is **data-driven**: every slide, object, position, image state, and
-navigation link is described in `src/data/slides.json`. The Vue components are a
-thin renderer over that data. There is no per-slide hand-written markup.
+The app is **component-first**: the UI (home menu, popups, the six shared nav
+controls) is written as Vue components with their on-stage coordinates baked in. The
+only data is a tiny typed list of the 21 story pages — a repeating list is genuinely
+data; everything else is code.
 
 ### Data flow
 
-1. **`src/data/slides.json`** — generated artifact. Shape: `{ stage, home, slides[] }`.
-   - `stage` is fixed **1280×720**. Every object has absolute `x/y/w/h/depth`.
-   - Each object carries `up`/`down` image paths, an optional `role`
-     (`home`/`next`/`prev`/`volume`/`mute`/`replay`/`close`/`tentang`/`petunjuk`),
-     a `target` (gotoplay slideId), and `openLayer` (popup layer id).
-2. **`src/data/slides.ts`** — the only place that imports the JSON. Provides typed
-   accessors (`SLIDES`, `HOME`, `STAGE`), `slideByPage(n)`, and
-   `targetToRoute(slideId)` which maps an internal slideId to a router path.
-   **Import slide data from here, never from the JSON directly.**
-3. **Views** consume the typed data:
-   - `views/HomeView.vue` — the menu (Halaman Utama): base layer + popup layers
-     (Mulai's 3-page "Pilih Halaman" grid, Petunjuk, Tentang). Popup state is a
-     single `openLayerId` ref; base-layer buttons are hidden while a popup is open.
-   - `views/SlideView.vue` — the 15 story pages at `/slide/1`..`/slide/15`.
-4. **Components** render objects:
-   - `components/SlideStage.vue` — the letterbox host; applies the scale transform
-     and emits `hostgesture` on first pointer (used to unblock audio autoplay).
-   - `components/StageObject.vue` — one absolutely-positioned object; renders a
-     `<button>` if `accType === 'button'` else a `<div>`, swaps `up`→`down` image
-     on press.
+1. **`src/data/slides.ts`** — the entire data layer. Exports:
+   - `STAGE = { width: 1280, height: 720 }` (fixed stage).
+   - `StorySlide` interface + `SLIDES: StorySlide[]` — 21 entries of
+     `{ page, title, background, backgroundAlt, backsound }`. **Pages are addressed by
+     1-based number**, which is also the route param (`/slide/:n`) and the prev/next
+     chain (`page ± 1`). No opaque Storyline slideIds, no `targetToRoute` indirection.
+   - `slideByPage(n)` and `PAGE_COUNT`.
+2. **Views**
+   - `views/SlideView.vue` — a story page: renders the `<img>` background + `<NavControls>`.
+     Owns `useSlideAudio()` and the router; maps NavControls intents
+     (`home → /`, `prev/next → page±1` with the ends going home, `toggle-audio`).
+   - `views/HomeView.vue` — the menu (Halaman Utama): composes `<HomeMenu>` plus one
+     open popup, held in a single `popup` ref (`'mulai' | 'petunjuk' | 'tentang' | null`).
+     Owns the looping background music + gesture-gating. Menu buttons hide while a popup
+     is open (`buttonsHidden`).
+3. **Components** (all under `src/components/`, geometry hardcoded in 1280×720 space)
+   - `SlideStage.vue` — letterbox host; applies the scale transform and emits
+     `hostgesture` on first pointer (used to unblock audio autoplay). Has a `<slot/>`.
+   - `StageButton.vue` — the one reusable primitive: an absolutely-positioned image
+     `<button>` with press-swap (`up`→`down`) + drop-shadow, driven by **typed props**
+     (`x,y,w,h,up,down?,alt?`); emits `activate`. Everything clickable composes it.
+   - `NavControls.vue` — the six controls (home/prev/next + the volume/mute/replay trio,
+     exactly one audio variant visible per `audioState`). Presentational; emits an
+     `activate(intent)` the parent handles.
+   - `HomeMenu.vue` — cover image + Mulai/Petunjuk/Tentang buttons; emits `open(popup)`.
+   - `StagePopup.vue` — shared popup chrome (full-stage scrim + close button) with a
+     `<slot/>` for the panel; emits `close`.
+   - `TentangPopup.vue`, `PetunjukPopup.vue` — scrim + panel via `StagePopup`.
+   - `MulaiGrid.vue` — "Pilih Halaman": a paged 3×2 thumbnail grid **generated by
+     iterating `SLIDES`** (6 per page → 4 pages), laid out with CSS grid. Internal page
+     index + prev/next arrows; emits `select(page)` and `close`. Adding a story page to
+     `SLIDES` shows up here automatically.
 
 ### Key conventions & gotchas
 
-- **Page numbers (1–15) follow the navigation chain order, NOT Storyline's internal
-  titles** (which drift, e.g. internal "5b" displays as "Halaman 6"). The display
-  page number is baked into the background artwork. `targetToRoute()` resolves
-  slideIds → page routes via this mapping.
+- **Asset paths are plain strings** like `assets/img/ui/home.png` (no leading slash),
+  bound dynamically (`:src="…"`, or via `StageButton`'s `up`/`down` props). They live in
+  `public/assets/` and are served as-is — do **not** use a static `src="assets/…"`
+  attribute (Vite's template compiler tries to bundle it and the build fails); keep the
+  binding dynamic so it stays a runtime URL under `file://`.
+- **Page numbers (1–21) are the navigation order**, baked into the background artwork.
+  `slide.title` is the original internal title (kept for reference; titles drift, e.g.
+  page 6's title is "Halaman 6" but page 9's is also "Halaman 8").
 - **Hash router** (`createWebHashHistory`) is mandatory — HTML5 history routing
   404s inside the Capacitor `file://` WebView on reload/deep-link.
 - **`base: './'`** in `vite.config.ts` (relative) so assets resolve under `file://`.
@@ -109,24 +126,18 @@ thin renderer over that data. There is no per-slide hand-written markup.
   user gesture. `composables/useSlideAudio.ts` is a per-slide state machine
   (`volume`↔`mute`↔`replay`) that surfaces `needsGesture` and retries after the
   first tap (wired through `SlideStage`'s `hostgesture` event). The audio control
-  in the top-right shows exactly one of the three variants at a time;
-  `SlideView` filters which one is visible based on the state.
+  in the top-right shows exactly one of the three variants at a time; `NavControls`
+  picks which one from the `audioState` prop `SlideView` passes in.
 - `@` aliases `src/` (vite + tsconfig).
 
-### Regenerating slide data (rarely needed)
+### History note (no longer applicable)
 
-`scripts/extract-slides.mjs` parses the original Storyline export
-(`window.globalProvideData` calls in `assets/html5/data/js/*.js`) into
-`slides.json` and copies referenced rasters/audio into `public/assets/`.
-`scripts/rename-assets.mjs` then renames the opaque Storyline-hash filenames into
-meaningful grouped names and rewrites the JSON paths (writes `public/assets/MANIFEST.md`).
-
-**Important:** the original Storyline source tree (`assets/html5/`, `assets/mobile/`,
-`assets/story_content/`) is **not** in this repo. Re-running extraction requires
-pointing the script at a restored export — a full copy exists at the sibling dir
+This app was originally a data-driven renderer over a generated `src/data/slides.json`,
+produced by `scripts/extract-slides.mjs` / `rename-assets.mjs` from the decompiled
+Storyline export. That toolchain has been **removed** — the UI is now hand-written
+components and the data is a small typed array. Re-extraction is not supported. If it is
+ever needed again, the decompiled source still lives at the sibling dir
 `/home/abdun/abdun/project/education-project/Lucu-yang-Menyeramkan_1_1.0/`.
-For normal feature work you edit `slides.json` / components directly and do **not**
-re-run extraction.
 
 `images-assets/` (numbered PNG screenshots) is reference material only and is
 not referenced by the Vue runtime.
