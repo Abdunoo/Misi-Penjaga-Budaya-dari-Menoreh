@@ -1,9 +1,0 @@
-[  247526ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:5174/src/views/HomeView.vue?t=1781452398995:0
-[  247526ms] [ERROR] [vite] Failed to reload /src/views/HomeView.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5174/@vite/client:524
-[  247527ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:5174/src/components/SlideStage.vue?t=1781452398995:0
-[  247527ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:5174/src/views/SlideView.vue?t=1781452398995:0
-[  247527ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:5174/src/components/StageObject.vue?t=1781452398995:0
-[  247527ms] [ERROR] [vite] Failed to reload /src/components/SlideStage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5174/@vite/client:524
-[  247527ms] [ERROR] [vite] Failed to reload /src/views/SlideView.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5174/@vite/client:524
-[  247527ms] [ERROR] [vite] Failed to reload /src/components/StageObject.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5174/@vite/client:524
-[  247528ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5174/@vite/client:992
