@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SlideStage from '@/components/SlideStage.vue'
 import NavControls from '@/components/NavControls.vue'
 import { useSlideAudio } from '@/composables/useSlideAudio'
+import { unlock } from '@/composables/useSfx'
 import { slideByPage, PAGE_COUNT } from '@/data/slides'
 
 const route = useRoute()
@@ -13,6 +14,12 @@ const page = computed(() => Number(route.params.n))
 const slide = computed(() => slideByPage(page.value))
 
 const { state, attach, toggle, resumeAfterGesture } = useSlideAudio()
+
+// First gesture unlocks both the narration retry and the SFX audio context.
+function onHostGesture() {
+  unlock()
+  resumeAfterGesture()
+}
 
 // (re)load the narration whenever the page changes
 watch(slide, (s) => attach(s?.backsound ?? null), { immediate: true })
@@ -42,7 +49,7 @@ function onControl(intent: 'home' | 'prev' | 'next' | 'toggle-audio') {
 </script>
 
 <template>
-  <SlideStage @hostgesture="resumeAfterGesture">
+  <SlideStage @hostgesture="onHostGesture">
     <img v-if="slide" class="slide-bg" :src="slide.background" :alt="slide.backgroundAlt" />
     <NavControls :audio-state="state" @activate="onControl" />
   </SlideStage>

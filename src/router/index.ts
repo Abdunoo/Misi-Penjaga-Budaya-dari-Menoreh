@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteLocationNormalized } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { whoosh } from '@/composables/useSfx'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -39,6 +40,12 @@ router.beforeEach((to, from) => {
       : pageIndex(to) >= fromIdx
         ? 'slide-forward'
         : 'slide-back'
+})
+
+// Page-change whoosh — only for an actual slide (not the silent first load).
+router.afterEach((to) => {
+  const tx = to.meta.transition
+  if (tx === 'slide-forward' || tx === 'slide-back') whoosh()
 })
 
 export default router

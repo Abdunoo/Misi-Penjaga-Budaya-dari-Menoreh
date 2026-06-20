@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import SlideStage from '@/components/SlideStage.vue'
 import HomeMenu from '@/components/HomeMenu.vue'
 import MulaiGrid from '@/components/MulaiGrid.vue'
 import PetunjukPopup from '@/components/PetunjukPopup.vue'
 import TentangPopup from '@/components/TentangPopup.vue'
+import { pop, unlock } from '@/composables/useSfx'
 
 const router = useRouter()
 
 type Popup = 'mulai' | 'petunjuk' | 'tentang'
 const popup = ref<Popup | null>(null)
 const close = () => (popup.value = null)
+
+// "Pop" SFX whenever a popup appears (null -> open only).
+watch(popup, (now, prev) => {
+  if (now !== null && prev === null) pop()
+})
 
 function selectPage(page: number) {
   router.push(`/slide/${page}`)
@@ -29,6 +35,7 @@ function startMusic() {
   music.play().catch(() => (musicGated.value = true))
 }
 function resumeMusic() {
+  unlock() // first gesture also unlocks the SFX audio context
   if (musicGated.value && music) {
     music
       .play()

@@ -3,6 +3,7 @@
 // pressed and carries Storyline's subtle drop-shadow. Geometry comes in as typed props
 // so callers stay self-describing — there is no data-object indirection.
 import { ref } from 'vue'
+import { click } from '@/composables/useSfx'
 
 const props = defineProps<{
   x: number
@@ -13,17 +14,26 @@ const props = defineProps<{
   /** Pressed-state image; falls back to `up`. */
   down?: string
   alt?: string
+  /** Idle breathing animation (used by the home menu buttons). */
+  pulse?: boolean
 }>()
 
 const emit = defineEmits<{ activate: [] }>()
 
 const pressed = ref(false)
 const release = () => (pressed.value = false)
+
+// Soft click on every activation (no-ops under reduced-motion / no Web Audio).
+function onClick() {
+  click()
+  emit('activate')
+}
 </script>
 
 <template>
   <button
     class="stage-button"
+    :class="{ pulse: props.pulse }"
     :style="{
       left: `${props.x}px`,
       top: `${props.y}px`,
@@ -35,7 +45,7 @@ const release = () => (pressed.value = false)
     @pointerup="release"
     @pointerleave="release"
     @pointercancel="release"
-    @click="emit('activate')"
+    @click="onClick"
   >
     <img :src="pressed && props.down ? props.down : props.up" :alt="props.alt || ''" />
   </button>
@@ -61,5 +71,29 @@ const release = () => (pressed.value = false)
   height: 100%;
   display: block;
   object-fit: fill;
+}
+
+/* Idle "breathing" for the home menu buttons. While pressed the animation pauses so the
+   :active scale(0.96) feedback wins (animation would otherwise own `transform`). */
+.stage-button.pulse {
+  animation: pulse 2.6s ease-in-out infinite;
+}
+.stage-button.pulse:active {
+  animation-play-state: paused;
+  transform: scale(0.96);
+}
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-button.pulse {
+    animation: none;
+  }
 }
 </style>
