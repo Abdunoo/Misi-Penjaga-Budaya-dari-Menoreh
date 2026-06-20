@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteLocationNormalized } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { whoosh } from '@/composables/useSfx'
+import { PAGE_COUNT } from '@/data/slides'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -25,13 +26,20 @@ const router = createRouter({
       name: 'slide',
       component: () => import('../views/SlideView.vue'),
     },
+    {
+      path: '/kuis',
+      name: 'kuis',
+      component: () => import('../views/QuizView.vue'),
+    },
   ],
 })
 
-// Pick the horizontal slide direction by comparing page indices (Home = 0, slide n = n).
-// Forward (new page from the right) when moving up the chain, back otherwise. The very
-// first navigation has no real `from`, so it plays no animation.
-const pageIndex = (r: RouteLocationNormalized) => (r.name === 'home' ? 0 : Number(r.params.n))
+// Pick the horizontal slide direction by comparing page indices (Home = 0, slide n = n,
+// the quiz sits just past the last page). Forward (new page from the right) when moving up
+// the chain, back otherwise. The very first navigation has no real `from`, so it plays no
+// animation. The quiz route has no :n param, so map it explicitly to avoid NaN.
+const pageIndex = (r: RouteLocationNormalized) =>
+  r.name === 'home' ? 0 : r.name === 'kuis' ? PAGE_COUNT + 1 : Number(r.params.n)
 router.beforeEach((to, from) => {
   const fromIdx = pageIndex(from)
   to.meta.transition =

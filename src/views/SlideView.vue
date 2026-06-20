@@ -30,10 +30,15 @@ function onHostGesture() {
 // (re)load the narration whenever the page changes
 watch(slide, (s) => attach(s?.backsound ?? null), { immediate: true })
 
-// Prev/Next walk the page chain; the ends fall back to the home menu.
+// Prev/Next walk the page chain. Stepping forward off the last page enters the quiz; the
+// other ends still fall back to the home menu.
 function go(delta: number) {
   const next = page.value + delta
-  router.push(next < 1 || next > PAGE_COUNT ? '/' : `/slide/${next}`)
+  if (next > PAGE_COUNT) {
+    router.push('/kuis')
+    return
+  }
+  router.push(next < 1 ? '/' : `/slide/${next}`)
 }
 
 function onControl(intent: 'home' | 'prev' | 'next' | 'toggle-audio') {
