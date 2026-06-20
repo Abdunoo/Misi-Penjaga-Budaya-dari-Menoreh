@@ -56,7 +56,7 @@ export const STAGE = data.stage
 export const HOME = data.home
 export const SLIDES = data.slides
 
-/** slideId -> display page number (1..15) */
+/** slideId -> display page number (1..21) */
 const idToPage = new Map<string, number>()
 for (const s of SLIDES) idToPage.set(s.slideId, s.page)
 
