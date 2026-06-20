@@ -1,0 +1,13 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic "Background.jpg" [ref=e5]:
+      - img "Background.jpg"
+    - generic "Petunjukk.png" [ref=e36]:
+      - img "Petunjukk.png"
+    - button "Silang.png" [ref=e37] [cursor=pointer]:
+      - img "Silang.png"
+  - generic [ref=e9]:
+    - generic "Toggle devtools panel" [ref=e10] [cursor=pointer]:
+      - img [ref=e11]
+    - generic "Toggle Component Inspector" [ref=e16] [cursor=pointer]:
+      - img [ref=e17]

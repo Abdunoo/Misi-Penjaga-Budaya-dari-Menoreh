@@ -1,0 +1,9 @@
+- generic [ref=e4]:
+  - generic "Background.jpg" [ref=e5]:
+    - img "Background.jpg"
+  - button "Tentang.png" [ref=e6] [cursor=pointer]:
+    - img "Tentang.png"
+  - button "Tombol Mulai.png" [ref=e7] [cursor=pointer]:
+    - img "Tombol Mulai.png"
+  - button "Tombol Petunjuk.png" [ref=e8] [cursor=pointer]:
+    - img "Tombol Petunjuk.png"

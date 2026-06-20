@@ -1,0 +1,17 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e33]:
+    - generic "Cerita 1.jpg" [ref=e34]:
+      - img "Cerita 1.jpg"
+    - button "Home.png" [ref=e35] [cursor=pointer]:
+      - img "Home.png"
+    - button "Kanan.png" [ref=e36] [cursor=pointer]:
+      - img "Kanan.png"
+    - button "Kiri.png" [ref=e37] [cursor=pointer]:
+      - img "Kiri.png"
+    - button "Volume.png" [ref=e38] [cursor=pointer]:
+      - img "Volume.png"
+  - generic [ref=e9]:
+    - generic "Toggle devtools panel" [ref=e10] [cursor=pointer]:
+      - img [ref=e11]
+    - generic "Toggle Component Inspector" [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
