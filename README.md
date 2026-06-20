@@ -42,7 +42,7 @@ cd android
 echo "sdk.dir=$HOME/Android/Sdk" > local.properties
 ./gradlew assembleDebug             # -> app/build/outputs/apk/debug/app-debug.apk
 ```
-The debug APK is also copied to `../Lucu-yang-Menyeramkan-debug.apk`.
+APKs are copied to `vue-app/build-output/` (run `./build-apk.sh` from `vue-app/`).
 
 For a signed release build: `./gradlew assembleRelease` with a configured keystore.
 
