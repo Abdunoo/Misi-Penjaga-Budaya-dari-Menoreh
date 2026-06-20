@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Lucu yang Menyeramkan</string>
-    <string name="title_activity_main">Lucu yang Menyeramkan</string>
-    <string name="package_name">com.sdntukharjo.lucumenyeramkan</string>
-    <string name="custom_url_scheme">com.sdntukharjo.lucumenyeramkan</string>
+    <string name="app_name">Misi Penjaga Budaya dari Menoreh</string>
+    <string name="title_activity_main">Misi Penjaga Budaya dari Menoreh</string>
+    <string name="package_name">com.misipenjagabudaya.menoreh</string>
+    <string name="custom_url_scheme">com.misipenjagabudaya.menoreh</string>
 </resources>

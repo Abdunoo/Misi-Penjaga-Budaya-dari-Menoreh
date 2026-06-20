@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A standalone **Vue 3 + Capacitor** rebuild of an Articulate Storyline 3 e-learning
-course ("Lucu yang Menyeramkan", SDN Tukharjo) — a fabel story for elementary
+course ("Misi Penjaga Budaya dari Menoreh", SDN Tukharjo) — a story for elementary
 students. The original was a decompiled Android APK that ran a thin WebView over
 the Storyline HTML5 player; this project reproduces it pixel-for-pixel as a native
 Vue app (no Storyline engine) and repackages it as an `.apk`.
@@ -15,9 +15,9 @@ Legacy decompiled-APK blobs, duplicate raw Storyline exports, the original
 Storyline-extraction scripts, and Playwright verification snapshots have been removed
 from git — the app is now hand-written Vue components, not a generated data renderer.
 
-> Note: the repo directory is named `Misi-Penjaga-Budaya-dari-Menoreh` but the
-> app identity is still "Lucu yang Menyeramkan". Treat this Vue project as the
-> source of truth.
+> Note: the app identity is "Misi Penjaga Budaya dari Menoreh" (appId
+> `com.misipenjagabudaya.menoreh`), matching the repo directory name. Treat this
+> Vue project as the source of truth.
 
 ### Repo layout
 
@@ -144,5 +144,8 @@ not referenced by the Vue runtime.
 
 ## App identity (capacitor.config.ts)
 
-- appId `com.sdntukharjo.lucumenyeramkan`, appName "Lucu yang Menyeramkan"
+- appId `com.misipenjagabudaya.menoreh`, appName "Misi Penjaga Budaya dari Menoreh"
 - Locked landscape orientation; `allowMixedContent: true`
+- Note: the release keystore alias/password is still `lucumenyeramkan` (see
+  `build-apk.sh` defaults) — kept unchanged for signing continuity; it is unrelated
+  to the app name and not user-visible.

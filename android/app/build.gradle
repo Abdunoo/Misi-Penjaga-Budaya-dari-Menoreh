@@ -10,7 +10,7 @@ if (keystorePropsFile.exists()) {
 }
 
 android {
-    namespace "com.sdntukharjo.lucumenyeramkan"
+    namespace "com.misipenjagabudaya.menoreh"
     compileSdk rootProject.ext.compileSdkVersion
 
     signingConfigs {
@@ -24,7 +24,7 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.sdntukharjo.lucumenyeramkan"
+        applicationId "com.misipenjagabudaya.menoreh"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.sdntukharjo.lucumenyeramkan',
-  appName: 'Lucu yang Menyeramkan',
+  appId: 'com.misipenjagabudaya.menoreh',
+  appName: 'Misi Penjaga Budaya dari Menoreh',
   webDir: 'dist',
   android: {
     allowMixedContent: true,

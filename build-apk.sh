@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build-apk.sh — Build the "Lucu yang Menyeramkan" Capacitor + Vue Android app.
+# build-apk.sh — Build the "Misi Penjaga Budaya dari Menoreh" Capacitor + Vue Android app.
 #
 # Pipeline: npm install -> vite build (dist/) -> capacitor sync android -> gradle assemble.
 # Produces installable APKs under ./build-output/.

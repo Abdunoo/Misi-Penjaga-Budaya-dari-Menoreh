@@ -1,4 +1,4 @@
-package com.sdntukharjo.lucumenyeramkan;
+package com.misipenjagabudaya.menoreh;
 
 import com.getcapacitor.BridgeActivity;
 

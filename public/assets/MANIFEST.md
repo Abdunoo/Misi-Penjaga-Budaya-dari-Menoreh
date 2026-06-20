@@ -1,4 +1,4 @@
-# Daftar Aset — "Lucu yang Menyeramkan"
+# Daftar Aset — "Misi Penjaga Budaya dari Menoreh"
 
 Panduan ini menjelaskan **file aset mana untuk apa**, supaya gambar/audio bisa
 diganti manual. Untuk mengganti sebuah aset: timpa file di `public/assets/...`

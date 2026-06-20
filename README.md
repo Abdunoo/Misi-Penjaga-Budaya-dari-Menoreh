@@ -1,8 +1,8 @@
-# Lucu yang Menyeramkan — Vue 3 + Capacitor
+# Misi Penjaga Budaya dari Menoreh — Vue 3 + Capacitor
 
-Rebuild of the original Articulate Storyline 3 e-learning course "Lucu yang
-Menyeramkan" (SDN Tukharjo) as a standalone Vue 3 app, packaged to Android with
-Capacitor. Pixel-perfect 1280×720 stage, in-slide controls, backsound audio.
+Rebuild of the original Articulate Storyline 3 e-learning course "Misi Penjaga
+Budaya dari Menoreh" (SDN Tukharjo) as a standalone Vue 3 app, packaged to Android
+with Capacitor. Pixel-perfect 1280×720 stage, in-slide controls, backsound audio.
 
 ## Stack
 - Vue 3.5 + Vite 8 + vue-router 4 (hash history for WebView)
@@ -45,7 +45,7 @@ APKs are copied to `vue-app/build-output/` (run `./build-apk.sh` from `vue-app/`
 For a signed release build: `./gradlew assembleRelease` with a configured keystore.
 
 ## App identity
-- appId: `com.sdntukharjo.lucumenyeramkan`
-- appName: `Lucu yang Menyeramkan`
+- appId: `com.misipenjagabudaya.menoreh`
+- appName: `Misi Penjaga Budaya dari Menoreh`
 - Orientation: locked landscape (`sensorLandscape`)
 - Icon: generated from the course thumbnail
