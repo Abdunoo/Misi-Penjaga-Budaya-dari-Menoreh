@@ -1,13 +1,19 @@
 <script setup lang="ts">
 // The post-story quiz: a single route (/kuis) with three internal phases (intro ->
 // playing -> score) held in component state so moving between questions never thrashes
-// the router or replays a slide transition. Unlike the story pages (PNG artwork) the quiz
-// is rendered as CSS text on the same scaled 1280x720 stage. Reachable only via Next on
-// the last story page.
-import { computed, ref } from 'vue'
+// the router or replays a slide transition. Re-skinned to the app's playful design
+// language (Fredoka + the --ui-* tokens, PillButton CTAs, floating decor, confetti) while
+// keeping the original FLOW: no per-answer right/wrong feedback — the selection stays
+// changeable, "Lanjut" only unlocks once an option is picked, and the score is revealed
+// only at the end. Reachable only via Next on the last story page.
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import SlideStage from '@/components/SlideStage.vue'
-import { click, pop, unlock } from '@/composables/useSfx'
+import PillButton from '@/components/PillButton.vue'
+import QuizDecor from '@/components/QuizDecor.vue'
+import QuizConfetti from '@/components/QuizConfetti.vue'
+import QuizOption from '@/components/QuizOption.vue'
+import { click, fanfare, unlock } from '@/composables/useSfx'
 import { QUIZ, QUIZ_COUNT } from '@/data/quiz'
 
 const router = useRouter()
@@ -31,13 +37,49 @@ const score = computed(() =>
 
 const LETTERS = ['a', 'b', 'c', 'd']
 
+// Encouraging score bands for a 10-question quiz: stars + an Indonesian message. Ordered
+// high → low; the first whose threshold is met wins (the 0-band is a guaranteed fallback).
+interface ScoreBand {
+  min: number
+  stars: number
+  message: string
+}
+const BANDS: ScoreBand[] = [
+  { min: 9, stars: 3, message: 'Luar biasa! Kamu Penjaga Budaya sejati!' },
+  { min: 7, stars: 2, message: 'Hebat! Pemahamanmu sudah sangat baik.' },
+  { min: 4, stars: 1, message: 'Bagus! Ayo baca lagi ceritanya dan coba lagi.' },
+  { min: 0, stars: 0, message: 'Jangan menyerah! Yuk pelajari lagi kisah Menoreh.' },
+]
+const scoreBand = computed<ScoreBand>(
+  () => BANDS.find((b) => score.value >= b.min) ?? BANDS[BANDS.length - 1]!,
+)
+// Three star slots, filled left-to-right per the band.
+const starSlots = computed(() => [0, 1, 2].map((i) => i < scoreBand.value.stars))
+
+// Progress bar fill (1-based on the current question).
+const progressPct = computed(() => `${((currentIndex.value + 1) / QUIZ_COUNT) * 100}%`)
+
+// Mascot "Jaya" — supplied as transparent PNGs by the user. Bound as runtime string paths
+// (never a static src="assets/…", which Vite would try to bundle). If a file is missing,
+// @error flips mascotOk so nothing renders — no broken-image icon.
+const mascotOk = ref(true)
+const JAYA_CHEER = 'assets/img/quiz/jaya-cheer.png'
+const JAYA_CELEBRATE = 'assets/img/quiz/jaya-celebrate.png'
+const mascotSrc = computed(() => (phase.value === 'score' ? JAYA_CELEBRATE : JAYA_CHEER))
+
+// Celebrate once when the score screen appears (the only entry into 'score').
+watch(phase, (v) => {
+  if (v === 'score') fanfare()
+})
+
 // First tap resumes the SFX audio context (mobile WebViews start it suspended).
 function onHostGesture() {
   unlock()
 }
 
+// PillButton plays its own click() on activate, so these handlers don't double up SFX —
+// except choose(), whose source (QuizOption) is silent.
 function start() {
-  pop()
   phase.value = 'playing'
 }
 
@@ -49,12 +91,16 @@ function choose(i: number) {
 function next() {
   if (!canAdvance.value) return
   if (isLast.value) {
-    pop()
     phase.value = 'score'
     return
   }
-  click()
   currentIndex.value++
+}
+
+function restart() {
+  answers.value = Array(QUIZ_COUNT).fill(null)
+  currentIndex.value = 0
+  phase.value = 'playing'
 }
 
 function goHome() {
@@ -65,15 +111,28 @@ function goHome() {
 <template>
   <SlideStage @hostgesture="onHostGesture">
     <div class="quiz">
-      <!-- Cover artwork behind every phase, dimmed by a scrim so the text stays legible. -->
+      <!-- Cover artwork behind every phase, dimmed by a warm scrim so the text stays legible. -->
       <img class="bg" :src="'assets/img/page-cover.png'" alt="" aria-hidden="true" />
       <div class="bg-scrim" aria-hidden="true" />
+      <QuizDecor />
+
+      <!-- Friendly mascot Jaya, persists across phases; positioned per phase, kept clear of
+           the question / answer text. Hidden entirely if the PNG is absent. -->
+      <img
+        v-if="mascotOk"
+        class="jaya"
+        :class="phase"
+        :src="mascotSrc"
+        alt=""
+        aria-hidden="true"
+        @error="mascotOk = false"
+      />
 
       <!-- Intro: a friendly cover with the big "Mulai Kuis" call to action. -->
       <div v-if="phase === 'intro'" class="intro">
-        <h1 class="intro-title">Ayo Uji Pemahamanmu!</h1>
+        <div class="plaque intro-title">Ayo Uji Pemahamanmu!</div>
         <p class="intro-sub">Jawab 10 pertanyaan tentang petualangan Penjaga Budaya.</p>
-        <button class="cta" type="button" @click="start">Mulai Kuis</button>
+        <PillButton :x="490" :y="440" :w="300" :h="96" label="Mulai Kuis" pulse @activate="start" />
       </div>
 
       <!-- Playing: one question, four answer cards, and the Lanjut/Selesai button. -->
@@ -81,35 +140,61 @@ function goHome() {
         <div class="progress" aria-live="polite">
           Soal {{ currentIndex + 1 }} / {{ QUIZ_COUNT }}
         </div>
-
-        <div class="question">{{ current.question }}</div>
-
-        <div class="options" role="radiogroup" aria-label="Pilihan jawaban">
-          <button
-            v-for="(opt, i) in current.options"
-            :key="i"
-            type="button"
-            class="option"
-            :class="{ selected: selected === i }"
-            role="radio"
-            :aria-checked="selected === i"
-            @click="choose(i)"
-          >
-            <span class="badge">{{ LETTERS[i] }}</span>
-            <span class="label">{{ opt }}</span>
-          </button>
+        <div class="progress-bar" aria-hidden="true">
+          <div class="progress-fill" :style="{ width: progressPct }" />
         </div>
 
-        <button class="cta advance" type="button" :disabled="!canAdvance" @click="next">
-          {{ isLast ? 'Selesai' : 'Lanjut' }}
-        </button>
+        <Transition name="qslide" mode="out-in">
+          <div :key="currentIndex" class="qblock">
+            <div class="question">{{ current.question }}</div>
+            <div class="options" role="radiogroup" aria-label="Pilihan jawaban">
+              <QuizOption
+                v-for="(opt, i) in current.options"
+                :key="i"
+                :letter="LETTERS[i] ?? ''"
+                :label="opt"
+                :selected="selected === i"
+                @select="choose(i)"
+              />
+            </div>
+          </div>
+        </Transition>
+
+        <!-- The advance button is a real PillButton once an answer is chosen; otherwise a
+             dimmed inert placeholder (PillButton has no disabled prop). next() also guards. -->
+        <PillButton
+          v-if="canAdvance"
+          :x="900"
+          :y="628"
+          :w="240"
+          :h="72"
+          :label="isLast ? 'Selesai' : 'Lanjut'"
+          @activate="next"
+        />
+        <div v-else class="advance-placeholder">{{ isLast ? 'Selesai' : 'Lanjut' }}</div>
       </div>
 
-      <!-- Score: final tally plus the single way out, back to the home menu. -->
+      <!-- Score: stars + tally + an encouraging message, with confetti and two ways out. -->
       <div v-else class="score">
-        <h1 class="score-title">Skormu</h1>
-        <p class="score-value">{{ score }} / {{ QUIZ_COUNT }}</p>
-        <button class="cta" type="button" @click="goHome">Kembali ke Home</button>
+        <div class="plaque score-title">Skormu</div>
+        <div class="stars" aria-hidden="true">
+          <svg
+            v-for="(filled, i) in starSlots"
+            :key="i"
+            class="star"
+            :class="{ filled }"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.57 19.23l1.03-6.02-4.37-4.26 6.04-.88z"
+            />
+          </svg>
+        </div>
+        <div class="score-value">{{ score }} / {{ QUIZ_COUNT }}</div>
+        <p class="score-message">{{ scoreBand.message }}</p>
+        <PillButton :x="320" :y="590" :w="300" :h="84" label="Kembali ke Home" @activate="goHome" />
+        <PillButton :x="660" :y="590" :w="300" :h="84" label="Coba Lagi" @activate="restart" />
+        <QuizConfetti />
       </div>
     </div>
   </SlideStage>
@@ -122,7 +207,7 @@ function goHome() {
   top: 0;
   width: 1280px;
   height: 720px;
-  color: #3a2c12;
+  color: var(--ui-text);
 }
 /* The story cover fills the stage behind every quiz phase. */
 .bg {
@@ -133,43 +218,90 @@ function goHome() {
   height: 720px;
   object-fit: cover;
 }
-/* A warm scrim over the busy artwork so question and answer text stays readable. */
+/* A warm maroon→dark scrim over the busy artwork so the UI reads clearly. */
 .bg-scrim {
   position: absolute;
   left: 0;
   top: 0;
   width: 1280px;
   height: 720px;
-  background: rgba(20, 12, 4, 0.5);
+  background: linear-gradient(rgba(110, 18, 12, 0.45), rgba(20, 12, 4, 0.62));
 }
-/* Phase content sits above the cover + scrim. */
+/* Phase content sits above the cover + scrim + decor + mascot. */
 .intro,
 .play,
 .score {
+  position: absolute;
+  inset: 0;
   z-index: 1;
 }
 
-/* ---- Intro phase ---- */
-.intro {
+/* ---- Mascot ---- */
+.jaya {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-  text-align: center;
-  padding: 0 120px;
+  height: auto;
+  user-select: none;
+  animation: mascot-bob 6s ease-in-out infinite;
 }
+.jaya.intro {
+  left: 30px;
+  bottom: 0;
+  width: 280px;
+}
+.jaya.playing {
+  left: 5px;
+  bottom: 0;
+  width: 130px;
+}
+.jaya.score {
+  right: 14px;
+  bottom: 0;
+  width: 250px;
+}
+@keyframes mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* ---- Shared banner plaque (headings) ---- */
+.plaque {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;
+  background: linear-gradient(var(--ui-banner-top), var(--ui-banner-bottom));
+  border: var(--ui-stroke-w) solid var(--ui-outline);
+  border-radius: var(--ui-radius-banner);
+  box-shadow:
+    var(--ui-shadow),
+    inset 0 4px 0 rgba(255, 255, 255, 0.28);
+  font-family: var(--ui-font);
+  font-weight: 600;
+  color: var(--ui-text);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
+/* ---- Intro phase ---- */
 .intro-title {
-  font-size: 56px;
-  font-weight: 800;
-  color: #ffd479;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  top: 150px;
+  padding: 14px 46px;
+  font-size: 46px;
 }
 .intro-sub {
-  font-size: 28px;
-  font-weight: 600;
+  position: absolute;
+  top: 296px;
+  left: 240px;
+  width: 800px;
+  text-align: center;
+  font-family: var(--ui-font);
+  font-size: 27px;
+  font-weight: 500;
   color: #ffffff;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
@@ -177,153 +309,189 @@ function goHome() {
 /* ---- Playing phase ---- */
 .progress {
   position: absolute;
-  top: 40px;
+  top: 24px;
   left: 0;
   width: 1280px;
   text-align: center;
-  font-size: 26px;
-  font-weight: 700;
-  color: #ffd479;
+  font-family: var(--ui-font);
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffe1a8;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
+.progress-bar {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--ui-outline);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ui-banner-top), var(--ui-fill-bottom));
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.qblock {
+  position: absolute;
+  left: 140px;
+  top: 96px;
+  width: 1000px;
+}
 .question {
-  position: absolute;
-  left: 140px;
-  top: 80px;
-  width: 1000px;
-  min-height: 120px;
-  text-align: center;
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-}
-.options {
-  position: absolute;
-  left: 140px;
-  top: 210px;
-  width: 1000px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.option {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  width: 1000px;
-  min-height: 84px;
-  padding: 14px 22px;
-  background: #ffffff;
-  border: 3px solid #e4d4b0;
-  border-radius: 18px;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    transform 0.08s ease,
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
-}
-.option:active {
-  transform: scale(0.99);
-}
-/* Selected state keeps the white background; only the border, badge and shadow change. */
-.option.selected {
-  border-color: #fe8b46;
-  border-width: 4px;
-  box-shadow: 0 2px 10px rgba(254, 139, 70, 0.35);
-}
-.badge {
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 92px;
+  margin-bottom: 18px;
+  padding: 18px 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background: #feb846;
-  color: #ffffff;
-  font-size: 26px;
-  font-weight: 800;
-}
-.option.selected .badge {
-  background: #fe8b46;
-}
-.label {
-  flex: 1;
-  font-size: 27px;
+  text-align: center;
+  background: var(--ui-panel-petunjuk);
+  border: var(--ui-stroke-w) solid var(--ui-outline);
+  border-radius: var(--ui-radius-panel);
+  box-shadow:
+    var(--ui-shadow),
+    inset 0 0 0 4px rgba(255, 255, 255, 0.25);
+  font-family: var(--ui-font);
+  font-size: 30px;
+  font-weight: 600;
   line-height: 1.25;
-  color: #3a2c12;
+  color: var(--ui-text);
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.advance-placeholder {
+  position: absolute;
+  left: 900px;
+  top: 628px;
+  width: 240px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--ui-stroke-w) solid var(--ui-outline);
+  border-radius: var(--ui-radius-pill);
+  background: linear-gradient(var(--ui-fill-top), var(--ui-fill-bottom));
+  box-shadow: var(--ui-shadow);
+  opacity: 0.45;
+  font-family: var(--ui-font);
+  font-size: 33px;
+  font-weight: 600;
+  color: var(--ui-text);
+  pointer-events: none;
 }
 
 /* ---- Score phase ---- */
-.score {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  text-align: center;
-}
 .score-title {
-  font-size: 48px;
-  font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  top: 70px;
+  padding: 12px 44px;
+  font-size: 40px;
+}
+.stars {
+  position: absolute;
+  top: 168px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+}
+.star {
+  width: 64px;
+  height: 64px;
+  animation: star-pop 0.4s ease-out backwards;
+}
+.star path {
+  fill: var(--ui-badge-cream-top);
+  stroke: var(--ui-outline);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.star.filled path {
+  fill: #ffcf4d;
+}
+.stars .star:nth-child(1) {
+  animation-delay: 0s;
+}
+.stars .star:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.stars .star:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes star-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .score-value {
-  font-size: 88px;
-  font-weight: 800;
-  color: #ffd479;
+  position: absolute;
+  top: 296px;
+  left: 0;
+  width: 1280px;
+  text-align: center;
+  font-family: var(--ui-font);
+  font-size: 80px;
+  font-weight: 600;
+  color: #ffe1a8;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.7);
 }
-
-/* ---- Shared pill button ---- */
-.cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 260px;
-  height: 84px;
-  padding: 0 44px;
-  background: #feb846;
-  color: #ffffff;
-  font-size: 36px;
-  font-weight: 800;
-  border: 0;
-  border-radius: 999px;
-  box-shadow: 0 4px 0 #d98e2a;
-  cursor: pointer;
-  transition:
-    transform 0.08s ease,
-    background 0.12s ease;
-}
-.cta:active {
-  transform: translateY(2px);
-  background: #fe8b46;
-  box-shadow: 0 2px 0 #d98e2a;
-}
-.cta:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-/* The advance button is pinned to the bottom-right of the playing stage. */
-.cta.advance {
+.score-message {
   position: absolute;
-  bottom: 30px;
-  right: 140px;
-  min-width: 240px;
-  height: 72px;
-  font-size: 32px;
+  top: 420px;
+  left: 280px;
+  width: 720px;
+  text-align: center;
+  font-family: var(--ui-font);
+  font-size: 26px;
+  font-weight: 500;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- Question-to-question transition ---- */
+.qslide-enter-active,
+.qslide-leave-active {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.qslide-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+.qslide-leave-to {
+  opacity: 0;
+  transform: translateX(-40px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .option,
-  .cta {
+  .jaya {
+    animation: none;
+  }
+  .star {
+    animation: none;
+  }
+  .progress-fill {
+    transition-duration: 1ms;
+  }
+  .qslide-enter-active,
+  .qslide-leave-active {
     transition-duration: 1ms;
   }
 }

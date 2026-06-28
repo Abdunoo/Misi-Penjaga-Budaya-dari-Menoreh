@@ -24,7 +24,7 @@ function selectPage(page: number) {
 }
 
 // Looping background music, gated behind the first user gesture (mobile autoplay block).
-const MUSIC = 'assets/audio/musik-home.mp3'
+const MUSIC = 'assets/audio/bs-cover.mp3'
 let music: HTMLAudioElement | null = null
 const musicGated = ref(false)
 

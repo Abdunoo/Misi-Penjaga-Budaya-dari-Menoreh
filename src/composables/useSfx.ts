@@ -77,6 +77,23 @@ export function pop(): void {
   tone({ type: 'sine', from: 420, to: 760, dur: 0.12, peak: 0.08 })
 }
 
+// Short rising major arpeggio (C–E–G–C) — a one-shot "ta-da" played when the quiz
+// score screen appears. Notes are spaced with setTimeout so each is its own short tone();
+// the last note rings a touch longer/louder for the cadence.
+export function fanfare(): void {
+  if (reduced()) return
+  const notes: [number, number, number][] = [
+    // [frequency, delay ms, duration s]
+    [523, 0, 0.18],
+    [659, 90, 0.18],
+    [784, 180, 0.18],
+    [1047, 300, 0.36],
+  ]
+  for (const [freq, delay, dur] of notes) {
+    setTimeout(() => tone({ type: 'triangle', from: freq, dur, peak: 0.07 }), delay)
+  }
+}
+
 // Airy downward sweep on page change (oscillator + lowpass, no noise buffer to keep it
 // light on low-end Android).
 export function whoosh(): void {

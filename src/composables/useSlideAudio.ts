@@ -1,13 +1,13 @@
 import { onUnmounted, ref } from 'vue'
 
 /**
- * Per-slide audio state machine mirroring the original Storyline behaviour:
- *  - backsound auto-plays on slide enter (vol 0.75) and the top-right control
- *    shows only ONE of Volume / Mute / Replay at a time.
- *  - Volume tap  -> mute backsound, show Mute.
+ * Per-slide audio for the looping background music (backsound):
+ *  - backsound auto-plays and LOOPS softly on slide enter (vol 0.5); the top-right
+ *    control toggles between Volume and Mute.
+ *  - Volume tap  -> pause backsound, show Mute.
  *  - Mute tap    -> resume backsound, show Volume.
- *  - backsound ends -> show Replay.
- *  - Replay tap  -> restart backsound, show Volume.
+ *  - The track loops, so it never "ends"; the Replay state is kept only as a
+ *    fallback in case a non-looping track is ever used.
  *
  * Mobile WebViews block autoplay-with-sound until a user gesture, so the first
  * play() may reject; we surface that as `needsGesture` and retry after any tap.
@@ -24,7 +24,8 @@ export function useSlideAudio() {
     detach()
     if (!src) return
     audio = new Audio(src)
-    audio.volume = 0.75
+    audio.loop = true
+    audio.volume = 0.5
     audio.addEventListener('ended', onEnded)
     state.value = 'volume'
     tryPlay()

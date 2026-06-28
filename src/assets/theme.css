@@ -1,0 +1,68 @@
+/* ---------------------------------------------------------------------------
+   Design tokens for the code-built UI (buttons, icons, popups).
+   Everything that used to be baked into PNG artwork now reads these variables,
+   so the whole palette can be re-themed from one place. Per-instance overrides
+   are still possible by setting the same custom properties on a component.
+
+   The story-page background artwork and the Quiz view are intentionally left
+   on their own styling — these tokens only drive the new playful UI chrome.
+--------------------------------------------------------------------------- */
+
+/* Bundled rounded display font (Fredoka, OFL). Self-hosted so it resolves under
+   the Capacitor file:// WebView. Relative path (no leading slash) per the
+   project's asset-path convention. Variable font: weights 300–700. */
+@font-face {
+  font-family: 'Fredoka';
+  src: url('assets/fonts/Fredoka.ttf') format('truetype');
+  font-weight: 300 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  /* Playful display font for headings / button labels / legend text. Falls back
+     to a rounded-ish stack if the bundled file ever fails to load. */
+  --ui-font: 'Fredoka', 'Baloo 2', 'Comic Sans MS', system-ui, sans-serif;
+
+  /* Line work + glyphs: the deep maroon outline shared by every control. */
+  --ui-outline: #6e120c;
+  --ui-glyph: #6e120c;
+
+  /* Orange "lozenge" fill used by the menu pill buttons (top → bottom gradient). */
+  --ui-fill-top: #ffc24d;
+  --ui-fill-bottom: #f0892f;
+  --ui-fill-pressed-top: #f4a23a;
+  --ui-fill-pressed-bottom: #db7a26;
+
+  /* Circular icon-badge fill (cream → orange). The close badge uses the lighter
+     cream variant below. */
+  --ui-badge-top: #ffe0a8;
+  --ui-badge-bottom: #f59a3c;
+  --ui-badge-cream-top: #fff1d6;
+  --ui-badge-cream-bottom: #ffd79a;
+
+  /* Popup panels. */
+  --ui-panel-petunjuk: #e8c8a4;
+  --ui-panel-petunjuk-border: #c89a66;
+  --ui-panel-tentang-top: #f9a23a;
+  --ui-panel-tentang-bottom: #f3861f;
+
+  /* Header banner (the little title plaque on each popup). */
+  --ui-banner-top: #ffc857;
+  --ui-banner-bottom: #f9a73a;
+
+  /* Text. */
+  --ui-text: #6e120c;
+  --ui-text-soft: #8a3a1c;
+
+  /* Avatar placeholder (Tentang). */
+  --ui-avatar-bg: #d23b2e;
+  --ui-avatar-fg: #fbe9d2;
+
+  /* Shared geometry. */
+  --ui-stroke-w: 4px;
+  --ui-radius-pill: 22px;
+  --ui-radius-panel: 28px;
+  --ui-radius-banner: 18px;
+  --ui-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}

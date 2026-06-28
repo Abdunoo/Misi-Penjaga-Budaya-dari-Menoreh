@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Shared popup chrome: a full-stage tinted scrim plus a close button. The panel artwork
 // (and any interactive content) goes in the default slot, positioned by the caller.
-import StageButton from '@/components/StageButton.vue'
+import IconButton from '@/components/IconButton.vue'
 
 defineProps<{
   /** Scrim tint, e.g. 'rgba(136, 212, 238, 0.64)'. */
@@ -21,13 +21,14 @@ const emit = defineEmits<{ close: [] }>()
   <div class="popup-root">
     <div class="scrim" :style="{ background: scrim }" />
     <slot />
-    <StageButton
+    <IconButton
       :x="closeX"
       :y="closeY"
       :w="54"
       :h="53"
-      up="assets/img/ui/close.png"
-      alt="Silang.png"
+      name="close"
+      variant="cream"
+      alt="Tutup"
       @activate="emit('close')"
     />
   </div>

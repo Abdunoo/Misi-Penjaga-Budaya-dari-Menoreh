@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // The six on-stage controls shared by every story page: Home (top-left), the audio
 // trio (top-right, exactly one visible per audio state) and Prev/Next (bottom corners).
-// Geometry/images are baked in here — these positions come straight from the original
-// course and never change per page. Presentational only: the parent owns audio + routing.
+// Geometry is baked in here — these positions come straight from the original course and
+// never change per page. Visuals are code-built <IconButton>s (no PNGs). Presentational
+// only: the parent owns audio + routing.
 import { computed } from 'vue'
-import StageButton from '@/components/StageButton.vue'
+import IconButton from '@/components/IconButton.vue'
+import type { GlyphName } from '@/components/icons/UiGlyph.vue'
 import type { AudioState } from '@/composables/useSlideAudio'
 
 const props = defineProps<{
@@ -17,17 +19,15 @@ const props = defineProps<{
 type Intent = 'home' | 'prev' | 'next' | 'toggle-audio'
 const emit = defineEmits<{ activate: [intent: Intent] }>()
 
-const UI = 'assets/img/ui'
-
 // The audio trio shares one slot in the top-right; we render whichever matches state.
-const audio = computed(() => {
+const audio = computed<{ name: GlyphName; alt: string; y: number }>(() => {
   switch (props.audioState) {
     case 'mute':
-      return { up: `${UI}/mute.png`, alt: 'Mute.png', y: 13 }
+      return { name: 'speaker-off', alt: 'Matikan suara', y: 13 }
     case 'replay':
-      return { up: `${UI}/replay.png`, alt: 'Ulangi.png', y: 14 }
+      return { name: 'replay', alt: 'Ulangi suara', y: 14 }
     default:
-      return { up: `${UI}/volume.png`, alt: 'Volume.png', y: 13 }
+      return { name: 'speaker', alt: 'Suara', y: 13 }
   }
 })
 </script>
@@ -36,40 +36,40 @@ const audio = computed(() => {
   <!-- One wrapper so the four controls fade and toggle interactivity as a unit.
        No `position` here: the buttons stay anchored to .stage, not this div. -->
   <div class="nav-layer" :class="{ 'nav-hidden': !props.visible }">
-    <StageButton
+    <IconButton
       :x="16"
       :y="13"
       :w="53"
       :h="53"
-      :up="`${UI}/home.png`"
-      :down="`${UI}/home-pressed.png`"
-      alt="Home.png"
+      name="home"
+      alt="Menu Utama"
       @activate="emit('activate', 'home')"
     />
-    <StageButton
-      :x="32"
-      :y="595"
-      :w="106"
-      :h="101"
-      :up="`${UI}/prev.png`"
-      alt="Kiri.png"
+    <IconButton
+      :x="16"
+      :y="654"
+      :w="53"
+      :h="53"
+      name="arrow"
+      flip
+      alt="Halaman Sebelumnya"
       @activate="emit('activate', 'prev')"
     />
-    <StageButton
-      :x="1147"
-      :y="595"
-      :w="106"
-      :h="101"
-      :up="`${UI}/next.png`"
-      alt="Kanan.png"
+    <IconButton
+      :x="1211"
+      :y="654"
+      :w="53"
+      :h="53"
+      name="arrow"
+      alt="Halaman Berikutnya"
       @activate="emit('activate', 'next')"
     />
-    <StageButton
+    <IconButton
       :x="1211"
       :y="audio.y"
       :w="53"
       :h="53"
-      :up="audio.up"
+      :name="audio.name"
       :alt="audio.alt"
       @activate="emit('activate', 'toggle-audio')"
     />

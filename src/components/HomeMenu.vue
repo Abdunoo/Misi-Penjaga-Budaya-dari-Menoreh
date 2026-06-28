@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Home base layer: the cover artwork plus the three menu buttons. Emits which popup the
 // user wants to open; HomeView owns the actual popup state.
-import StageButton from '@/components/StageButton.vue'
+import PillButton from '@/components/PillButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -13,8 +13,6 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{ open: [popup: 'mulai' | 'petunjuk' | 'tentang'] }>()
-
-const UI = 'assets/img/ui'
 </script>
 
 <template>
@@ -32,38 +30,32 @@ const UI = 'assets/img/ui'
   </div>
 
   <template v-if="!props.buttonsHidden">
-    <StageButton
+    <PillButton
       :x="888"
       :y="312"
       :w="285"
       :h="101"
-      :up="`${UI}/tombol-mulai.png`"
-      :down="`${UI}/tombol-mulai-pressed.png`"
-      alt="Tombol Mulai.png"
+      label="Mulai"
       pulse
       :style="{ animationDelay: '0s' }"
       @activate="emit('open', 'mulai')"
     />
-    <StageButton
+    <PillButton
       :x="888"
       :y="440"
       :w="285"
       :h="91"
-      :up="`${UI}/tombol-petunjuk.png`"
-      :down="`${UI}/tombol-petunjuk-pressed.png`"
-      alt="Tombol Petunjuk.png"
+      label="Petunjuk"
       pulse
       :style="{ animationDelay: '0.4s' }"
       @activate="emit('open', 'petunjuk')"
     />
-    <StageButton
+    <PillButton
       :x="888"
       :y="560"
       :w="284"
       :h="101"
-      :up="`${UI}/tentang.png`"
-      :down="`${UI}/tentang-pressed.png`"
-      alt="Tentang.png"
+      label="Tentang"
       pulse
       :style="{ animationDelay: '0.8s' }"
       @activate="emit('open', 'tentang')"
