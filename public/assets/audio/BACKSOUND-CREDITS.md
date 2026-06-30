@@ -41,6 +41,6 @@ Diunduh: 2026-06-28.
 | sfx-crowd.mp3 | Generic Crowd Background Noise | 13, 17 (keramaian) | https://pixabay.com/sound-effects/people-generic-crowd-background-noise-31310/ |
 | sfx-applause.mp3 | Applause, cheer | 22, 23 (festival/ikrar) | https://pixabay.com/sound-effects/people-applause-cheer-236786/ |
 
-> Catatan: `bs-suling.mp3` cukup panjang (±7:45). Bila ingin memperkecil ukuran APK,
-> potong jadi ±60–90 dtk lalu loop, mis.:
-> `ffmpeg -i bs-suling.mp3 -t 90 -c copy bs-suling-short.mp3`
+> Catatan ukuran: semua `bs-*`/`sfx-*` sudah di-encode ulang ke **96 kbps mono**
+> (cukup untuk musik latar di HP) dan `bs-suling.mp3` dipotong ke ±90 dtk (loop) —
+> total audio turun dari ±82 MB menjadi ±24 MB.

@@ -207,7 +207,7 @@ if [[ $DO_DEBUG -eq 1 ]]; then
   gradle_run assembleDebug
   collect_apk "DEBUG" \
     "$ANDROID_DIR/app/build/outputs/apk/debug/app-debug.apk" \
-    "Lucu-yang-Menyeramkan-debug.apk"
+    "Misi-Penjaga-Budaya-dari-Menoreh-debug.apk"
   BUILT+=("debug")
 fi
 
@@ -219,9 +219,9 @@ if [[ $DO_RELEASE -eq 1 ]]; then
   rel_signed="$ANDROID_DIR/app/build/outputs/apk/release/app-release.apk"
   rel_unsigned="$ANDROID_DIR/app/build/outputs/apk/release/app-release-unsigned.apk"
   if [[ -f "$rel_signed" ]]; then
-    collect_apk "RELEASE (signed)" "$rel_signed" "Lucu-yang-Menyeramkan-release.apk"
+    collect_apk "RELEASE (signed)" "$rel_signed" "Misi-Penjaga-Budaya-dari-Menoreh-release.apk"
   else
-    collect_apk "RELEASE (UNSIGNED)" "$rel_unsigned" "Lucu-yang-Menyeramkan-release-unsigned.apk"
+    collect_apk "RELEASE (UNSIGNED)" "$rel_unsigned" "Misi-Penjaga-Budaya-dari-Menoreh-release-unsigned.apk"
     warn "Release APK is unsigned — signing config did not apply."
   fi
   BUILT+=("release")
