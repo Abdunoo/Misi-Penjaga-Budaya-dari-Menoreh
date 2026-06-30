@@ -16,7 +16,7 @@ const emit = defineEmits<{ open: [popup: 'mulai' | 'petunjuk' | 'tentang'] }>()
 </script>
 
 <template>
-  <img class="cover" :src="'assets/img/page-cover.png'" alt="Background.jpg" />
+  <img class="cover" :src="'assets/img/page-cover.webp'" alt="Background.webp" />
 
   <!-- Decorative floating bubbles. Sits above the cover but below the menu buttons
        (DOM order) and never intercepts taps. Kept to the left/lower area so it doesn't

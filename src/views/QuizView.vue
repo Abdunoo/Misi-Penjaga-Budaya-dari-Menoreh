@@ -63,8 +63,8 @@ const progressPct = computed(() => `${((currentIndex.value + 1) / QUIZ_COUNT) * 
 // (never a static src="assets/…", which Vite would try to bundle). If a file is missing,
 // @error flips mascotOk so nothing renders — no broken-image icon.
 const mascotOk = ref(true)
-const JAYA_CHEER = 'assets/img/quiz/jaya-cheer.png'
-const JAYA_CELEBRATE = 'assets/img/quiz/jaya-celebrate.png'
+const JAYA_CHEER = 'assets/img/quiz/jaya-cheer.webp'
+const JAYA_CELEBRATE = 'assets/img/quiz/jaya-celebrate.webp'
 const mascotSrc = computed(() => (phase.value === 'score' ? JAYA_CELEBRATE : JAYA_CHEER))
 
 // Celebrate once when the score screen appears (the only entry into 'score').
@@ -112,7 +112,7 @@ function goHome() {
   <SlideStage @hostgesture="onHostGesture">
     <div class="quiz">
       <!-- Cover artwork behind every phase, dimmed by a warm scrim so the text stays legible. -->
-      <img class="bg" :src="'assets/img/page-cover.png'" alt="" aria-hidden="true" />
+      <img class="bg" :src="'assets/img/page-cover.webp'" alt="" aria-hidden="true" />
       <div class="bg-scrim" aria-hidden="true" />
       <QuizDecor />
 

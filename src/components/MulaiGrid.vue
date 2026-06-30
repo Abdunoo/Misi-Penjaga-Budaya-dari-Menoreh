@@ -64,7 +64,7 @@ const hasNext = computed(() => index.value < pages.value.length - 1)
         :aria-label="`Halaman ${s.page}`"
         @click="emit('select', s.page)"
       >
-        <img :src="`assets/img/mulai/mini-page${s.page}.png`" :alt="`Mini Cerita ${s.page}`" />
+        <img :src="`assets/img/mulai/mini-page${s.page}.webp`" :alt="`Mini Cerita ${s.page}`" />
       </button>
     </div>
 

@@ -37,8 +37,15 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // Never recompress PNGs (keep image assets byte-for-byte as authored).
+            crunchPngs false
+        }
         release {
             minifyEnabled false
+            // Disable aapt PNG crunching so the build never recompresses images.
+            // (Defaults to true for release; we keep icons/assets exactly as authored.)
+            crunchPngs false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (keystorePropsFile.exists()) {
                 signingConfig signingConfigs.release
