@@ -1,11 +1,12 @@
 <script setup lang="ts">
-// "Tentang" (About) popup: scrim + a fully code-built panel + close. The real developer
-// photo is replaced by a coded avatar placeholder (a photo can't be pure code); the
-// panel, header plaque, avatar, and info rows are CSS/SVG and re-theme from --ui-* tokens.
-// The developer details live in one editable object below.
+// "Tentang" (About) popup: scrim + a code-built panel + close. The panel, header plaque,
+// and info rows are CSS/SVG and re-theme from the --ui-* tokens; the avatar slot holds the
+// real developer portrait. The developer details live in one editable object below.
 import StagePopup from '@/components/StagePopup.vue'
 
 const emit = defineEmits<{ close: [] }>()
+
+const PHOTO = 'assets/img/profil.webp'
 
 const DEV = {
   nama: 'Dhesta Youlandi Rahayu Sulistiyawati',
@@ -33,12 +34,8 @@ const INFO: { label: string; value: string }[] = [
       <h2 class="banner">Tentang<br />Pengembang</h2>
 
       <div class="body">
-        <!-- Coded avatar placeholder (replaces the original portrait photo). -->
-        <div class="avatar" aria-hidden="true">
-          <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="40" r="22" fill="var(--ui-avatar-fg)" />
-            <path d="M22 120 C22 86 36 78 50 78 C64 78 78 86 78 120 Z" fill="var(--ui-avatar-fg)" />
-          </svg>
+        <div class="avatar">
+          <img :src="PHOTO" :alt="`Foto ${DEV.nama}`" />
         </div>
 
         <dl class="info">
@@ -97,19 +94,19 @@ const INFO: { label: string; value: string }[] = [
   flex: 0 0 248px;
   width: 248px;
   height: 326px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   overflow: hidden;
   border: 5px solid var(--ui-outline);
   border-radius: 26px;
   background: var(--ui-avatar-bg);
   box-shadow: var(--ui-shadow);
 }
-.avatar svg {
-  width: 78%;
-  height: 84%;
+.avatar img {
+  width: 100%;
+  height: 100%;
   display: block;
+  /* The portrait is taller than this slot — crop it rather than squash the face. */
+  object-fit: cover;
+  object-position: center;
 }
 .info {
   flex: 1;

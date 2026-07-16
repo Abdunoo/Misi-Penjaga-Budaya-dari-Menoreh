@@ -55,9 +55,8 @@
   --ui-text: #6e120c;
   --ui-text-soft: #8a3a1c;
 
-  /* Avatar placeholder (Tentang). */
+  /* Avatar frame backing (Tentang) — shows only until the portrait paints. */
   --ui-avatar-bg: #d23b2e;
-  --ui-avatar-fg: #fbe9d2;
 
   /* Shared geometry. */
   --ui-stroke-w: 4px;
