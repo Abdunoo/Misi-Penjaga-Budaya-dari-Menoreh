@@ -20,14 +20,16 @@ type Intent = 'home' | 'prev' | 'next' | 'toggle-audio'
 const emit = defineEmits<{ activate: [intent: Intent] }>()
 
 // The audio trio shares one slot in the top-right; we render whichever matches state.
+// Each `alt` names the action the tap performs, not the state it reflects — so the muted
+// button reads "Nyalakan suara" (tapping resumes), and the playing one "Matikan suara".
 const audio = computed<{ name: GlyphName; alt: string; y: number }>(() => {
   switch (props.audioState) {
     case 'mute':
-      return { name: 'speaker-off', alt: 'Matikan suara', y: 13 }
+      return { name: 'speaker-off', alt: 'Nyalakan suara', y: 13 }
     case 'replay':
       return { name: 'replay', alt: 'Ulangi suara', y: 14 }
     default:
-      return { name: 'speaker', alt: 'Suara', y: 13 }
+      return { name: 'speaker', alt: 'Matikan suara', y: 13 }
   }
 })
 </script>

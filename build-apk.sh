@@ -219,9 +219,11 @@ if [[ $DO_RELEASE -eq 1 ]]; then
   rel_signed="$ANDROID_DIR/app/build/outputs/apk/release/app-release.apk"
   rel_unsigned="$ANDROID_DIR/app/build/outputs/apk/release/app-release-unsigned.apk"
   if [[ -f "$rel_signed" ]]; then
-    collect_apk "RELEASE (signed)" "$rel_signed" "Misi-Penjaga-Budaya-dari-Menoreh-release.apk"
+    # The signed release is the one users install, so it gets the plain app name —
+    # no suffix. Only the non-shippable variants are suffixed (-debug, -unsigned).
+    collect_apk "RELEASE (signed)" "$rel_signed" "Misi-Penjaga-Budaya-dari-Menoreh.apk"
   else
-    collect_apk "RELEASE (UNSIGNED)" "$rel_unsigned" "Misi-Penjaga-Budaya-dari-Menoreh-release-unsigned.apk"
+    collect_apk "RELEASE (UNSIGNED)" "$rel_unsigned" "Misi-Penjaga-Budaya-dari-Menoreh-unsigned.apk"
     warn "Release APK is unsigned — signing config did not apply."
   fi
   BUILT+=("release")

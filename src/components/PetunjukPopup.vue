@@ -8,14 +8,17 @@ import type { GlyphName } from '@/components/icons/UiGlyph.vue'
 
 const emit = defineEmits<{ close: [] }>()
 
+// Each row reads "this is the icon you see; tapping it does <label>". The speaker pairing
+// follows useSlideAudio's toggle(): the plain speaker shows while the track plays (tap to
+// mute), the crossed-out one shows while muted (tap to resume). The 'replay' glyph is
+// deliberately absent — every track loops, so its state is unreachable.
 const ROWS: { name: GlyphName; flip?: boolean; label: string }[] = [
-  { name: 'speaker-off', label: 'Matikan Suara' },
-  { name: 'speaker', label: 'Nyalakan Suara' },
+  { name: 'speaker', label: 'Matikan Suara' },
+  { name: 'speaker-off', label: 'Nyalakan Suara' },
   { name: 'arrow', flip: true, label: 'Halaman Sebelumnya' },
   { name: 'arrow', label: 'Halaman Berikutnya' },
   { name: 'home', label: 'Menu Utama' },
   { name: 'close', label: 'Tutup' },
-  { name: 'replay', label: 'Ulangi' },
 ]
 </script>
 
